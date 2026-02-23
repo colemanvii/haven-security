@@ -1,0 +1,285 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Haven Security</title>
+<meta name="description" content="Haven Security — Guardian Doctrine v1." />
+<style>
+  :root{
+    --bg:#07090c;
+    --ink:#e9ecef;
+    --muted:#8a93a0;
+    --dim:#5b6470;
+    --line:#151b23;
+    --grid:rgba(255,255,255,.035);
+    --glass:rgba(255,255,255,.03);
+    --glass2:rgba(255,255,255,.018);
+    --edge:rgba(255,255,255,.10);
+    --edge2:rgba(255,255,255,.06);
+    --shadow:rgba(0,0,0,.55);
+  }
+
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--ink);
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono","Courier New", monospace;
+    letter-spacing:.02em;
+    -webkit-font-smoothing:antialiased;
+    text-rendering:optimizeLegibility;
+    overflow:hidden; /* portal: no scroll */
+  }
+
+  /* Mission-control grid + glow */
+  body::before{
+    content:"";
+    position:fixed;
+    inset:0;
+    pointer-events:none;
+    background:
+      linear-gradient(to right, var(--grid) 1px, transparent 1px) 0 0 / 48px 48px,
+      linear-gradient(to bottom, var(--grid) 1px, transparent 1px) 0 0 / 48px 48px,
+      radial-gradient(900px 520px at 50% 18%, rgba(255,255,255,.07), transparent 70%),
+      radial-gradient(700px 420px at 15% 85%, rgba(120,180,255,.05), transparent 70%);
+    opacity:.95;
+  }
+
+  .frame{
+    position:fixed;
+    inset:0;
+    padding:clamp(16px,3vw,28px);
+    display:grid;
+    place-items:center;
+  }
+
+  /* Liquid-glass shell */
+  .shell{
+    width:min(980px, 100%);
+    height:min(640px, 100%);
+    position:relative;
+    display:grid;
+    grid-template-rows:auto 1fr auto;
+
+    border-radius:18px;
+    border:1px solid var(--edge2);
+    background:
+      linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.015) 42%, rgba(255,255,255,.01)),
+      radial-gradient(900px 520px at 50% 0%, rgba(255,255,255,.06), transparent 60%),
+      rgba(12,16,22,.72);
+    box-shadow:
+      0 28px 70px var(--shadow),
+      inset 0 1px 0 rgba(255,255,255,.08);
+    backdrop-filter: blur(16px) saturate(120%);
+    -webkit-backdrop-filter: blur(16px) saturate(120%);
+    overflow:hidden;
+  }
+
+  /* subtle inner scanlines */
+  .shell::after{
+    content:"";
+    position:absolute;
+    inset:0;
+    pointer-events:none;
+    background:
+      linear-gradient(to bottom, rgba(255,255,255,.02) 1px, transparent 1px) 0 0 / 100% 22px;
+    opacity:.12;
+    mix-blend-mode: overlay;
+  }
+
+  /* Corner ticks */
+  .ticks{
+    position:absolute;
+    inset:0;
+    pointer-events:none;
+    opacity:.7;
+    background:
+      linear-gradient(var(--edge), var(--edge)) 18px 18px / 18px 1px no-repeat,
+      linear-gradient(var(--edge), var(--edge)) 18px 18px / 1px 18px no-repeat,
+
+      linear-gradient(var(--edge), var(--edge)) calc(100% - 36px) 18px / 18px 1px no-repeat,
+      linear-gradient(var(--edge), var(--edge)) calc(100% - 19px) 18px / 1px 18px no-repeat,
+
+      linear-gradient(var(--edge), var(--edge)) 18px calc(100% - 19px) / 18px 1px no-repeat,
+      linear-gradient(var(--edge), var(--edge)) 18px calc(100% - 36px) / 1px 18px no-repeat,
+
+      linear-gradient(var(--edge), var(--edge)) calc(100% - 36px) calc(100% - 19px) / 18px 1px no-repeat,
+      linear-gradient(var(--edge), var(--edge)) calc(100% - 19px) calc(100% - 36px) / 1px 18px no-repeat;
+  }
+
+  header{
+    padding:20px 22px 16px;
+    border-bottom:1px solid var(--line);
+    display:flex;
+    align-items:flex-start;
+    justify-content:space-between;
+    gap:16px;
+    background: linear-gradient(180deg, rgba(255,255,255,.03), transparent);
+  }
+
+  h1{
+    margin:0 0 8px;
+    font-size:16px;
+    font-weight:800;
+    letter-spacing:.22em;
+  }
+
+  .subtitle{
+    margin:0;
+    color:var(--muted);
+    font-size:12px;
+    line-height:1.55;
+    max-width:62ch;
+  }
+
+  .telemetry{
+    text-align:right;
+    font-size:11px;
+    color:var(--muted);
+    line-height:1.6;
+    white-space:nowrap;
+  }
+  .telemetry .k{ color:var(--dim); }
+  .telemetry .v{ color:var(--muted); }
+
+  main{
+    padding:22px;
+    display:grid;
+    place-items:center;
+  }
+
+  .panel{
+    width:100%;
+    border-radius:14px;
+    border:1px solid rgba(255,255,255,.08);
+    background:
+      radial-gradient(600px 240px at 18% 10%, rgba(255,255,255,.05), transparent 55%),
+      linear-gradient(180deg, rgba(255,255,255,.035), rgba(255,255,255,.015)),
+      rgba(0,0,0,.18);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.06);
+    padding:22px;
+  }
+
+  .label{
+    color:var(--muted);
+    font-size:11px;
+    letter-spacing:.22em;
+    margin:0 0 14px;
+  }
+
+  .statement{
+    margin:0 0 16px;
+    font-size:15px;
+    line-height:1.85;
+  }
+
+  .actions{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    flex-wrap:wrap;
+  }
+
+  a.btn{
+    display:inline-flex;
+    align-items:center;
+    gap:10px;
+    padding:10px 14px;
+    border-radius:12px;
+    border:1px solid rgba(255,255,255,.10);
+    background: rgba(255,255,255,.02);
+    color:var(--ink);
+    text-decoration:none;
+    font-size:12px;
+    letter-spacing:.10em;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.08);
+  }
+  a.btn:hover{
+    background: rgba(255,255,255,.04);
+    border-color: rgba(255,255,255,.16);
+  }
+
+  .statusline{
+    margin-top:16px;
+    color:var(--muted);
+    font-size:11px;
+    letter-spacing:.16em;
+  }
+
+  footer{
+    padding:16px 22px;
+    border-top:1px solid var(--line);
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:12px;
+    color:var(--muted);
+    font-size:11px;
+    background: linear-gradient(0deg, rgba(255,255,255,.02), transparent);
+  }
+
+  .motto{
+    color:var(--dim);
+    letter-spacing:.14em;
+  }
+
+  /* Mobile: still portal/no scroll */
+  @media (max-width: 560px){
+    .shell{ height:min(620px, 100%); border-radius:16px; }
+    header{ padding:18px 16px 14px; }
+    main{ padding:16px; }
+    .panel{ padding:16px; border-radius:12px; }
+    footer{ padding:14px 16px; }
+    .telemetry{ display:none; }
+    h1{ font-size:15px; }
+  }
+</style>
+</head>
+
+<body>
+  <div class="frame">
+    <div class="shell" role="document" aria-label="Haven Security portal">
+      <div class="ticks" aria-hidden="true"></div>
+
+      <header>
+        <div>
+          <h1>HAVEN SECURITY</h1>
+          <p class="subtitle">
+            A unified guardian protocol for reducing digital and physical uncertainty through structural security design.
+          </p>
+        </div>
+
+        <div class="telemetry" aria-label="Status telemetry">
+          <div><span class="k">MODE</span> <span class="v">GUARDIAN</span></div>
+          <div><span class="k">INTERFACE</span> <span class="v">MINIMAL</span></div>
+        </div>
+      </header>
+
+      <main>
+        <section class="panel" aria-label="Guardian Doctrine v1">
+          <div class="label">GUARDIAN DOCTRINE v1</div>
+
+          <p class="statement">
+            Security removes the need for constant checking.<br>
+            The guardian observes so the individual does not.<br>
+            Structural clarity replaces vigilance.
+          </p>
+
+          <div class="actions">
+            <a class="btn" href="whitepaper/Haven-Security-Guardian-Doctrine-v1.pdf">ACCESS DOCTRINE →</a>
+          </div>
+
+          <div class="statusline">STATUS: SILENCE IS THE DEFAULT STATE</div>
+        </section>
+      </main>
+
+      <footer>
+        <div>Haven Systems of America</div>
+        <div class="motto">IN CYBERSPACE AS IT IS IN HEAVEN</div>
+      </footer>
+    </div>
+  </div>
+</body>
+</html>
